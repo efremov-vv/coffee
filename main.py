@@ -1,21 +1,23 @@
 import sys
 import sqlite3
 
-from PyQt5 import uic, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5 import uic
+
+from coffee import Ui_MainWindow
+from addEditCoffeeForm import Ui_Dialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog
 
 
-class QDialogClass(QtWidgets.QDialog):
+class QDialogClass(QDialog, Ui_Dialog):
     def __init__(self, index, data, edit):
         super().__init__()
+        self.setupUi(self)
         self.update = {'id': '', 'name': '', 'grade': '', 'degree of roast': '', 'type': '', 'taste description': '',
                        'price': '', 'size': ''}
         self.index = index
         self.edit = edit
-        uic.loadUi('addEditCoffeeForm.ui', self)
 
         if edit:
-            print('fd')
             self.update = {}
             self.textEdit.setText(str(data[index][1]))
             self.textEdit_2.setText(data[index][2])
@@ -25,7 +27,6 @@ class QDialogClass(QtWidgets.QDialog):
             self.textEdit_8.setText(str(data[index][6]))
             self.textEdit_7.setText(str(data[index][7]))
         else:
-            print('fw')
             self.textEdit.setText('Название')
             self.textEdit_2.setText('Название сорта')
             self.textEdit_3.setText('Степень обжарки')
@@ -49,7 +50,7 @@ class QDialogClass(QtWidgets.QDialog):
         self.update[par] = val
 
     def write(self):
-        cur = sqlite3.connect("coffee.sqlite")
+        cur = sqlite3.connect("data/coffee.sqlite")
         cur.cursor()
         if self.edit:
             for el in self.update:
@@ -68,11 +69,11 @@ class QDialogClass(QtWidgets.QDialog):
         self.reject()
 
 
-class MyWidget(QMainWindow):
+class MyWidget(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('coffee.ui', self)
-        con = sqlite3.connect("coffee.sqlite")
+        self.setupUi(self)
+        con = sqlite3.connect("data/coffee.sqlite")
 
         cur = con.cursor()
 
@@ -107,13 +108,11 @@ class MyWidget(QMainWindow):
 
     def change_info(self, edit):
         if edit:
-            print('adfas')
             dialog = QDialogClass(self.comboBox.currentIndex(), self.coffee_list, True)
         else:
-            print('fgdgfd')
             dialog = QDialogClass(self.comboBox.currentIndex(), self.coffee_list, False)
         dialog.exec_()
-        con = sqlite3.connect("coffee.sqlite")
+        con = sqlite3.connect("data/coffee.sqlite")
         cur = con.cursor()
         self.coffee_list = cur.execute("""SELECT * FROM info""").fetchall()
         cur.close()
